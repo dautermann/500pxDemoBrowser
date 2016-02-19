@@ -36,9 +36,23 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
         // Dispose of any resources that can be recreated.
     }
 
+    // we only want to show the navigation bar when we're in the detail view; no need to show it here
+    // (we'd rather show the search bar instead)
+    override func viewWillAppear(animated: Bool) {
+        navigationController?.navigationBarHidden = true
+        super.viewWillAppear(animated)
+    }
+    
+    override func viewWillDisappear(animated: Bool) {
+        if (navigationController?.topViewController != self) {
+            navigationController?.navigationBarHidden = false
+        }
+        super.viewWillDisappear(animated)
+    }
+
     func performGetFrom500pxServer(forPage pageNumber :Int)
     {
-        let requestURLString = "https://api.500px.com/v1/photos?feature=popular&page=\(pageNumber)&consumer_key=INSERT_CONSUMER_KEY_HERE"
+        let requestURLString = "https://api.500px.com/v1/photos?feature=popular&image_size=600&page=\(pageNumber)&consumer_key=L5JIFnakAfeIGbjDwrVdvEzG3N2HisdJL9wS0apV"
         let request = NSMutableURLRequest(URL: NSURL(string:requestURLString)!)
         
         request.HTTPMethod = "GET"
