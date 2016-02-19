@@ -8,7 +8,7 @@
 
 import UIKit
 
-class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLSessionTaskDelegate, UITableViewDataSource, UITableViewDelegate {
+class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLSessionTaskDelegate, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
 
     @IBOutlet var tableView : UITableView!
     
@@ -196,6 +196,16 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
     
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         self.performSegueWithIdentifier("ShowDetail", sender: self)
+    }
+    
+    func searchBarSearchButtonClicked(searchBar: UISearchBar)
+    {
+        print("search for titles that contain \(searchBar.text)")
+        let array = NSArray(array: photoArray!)
+        
+        let filteredArray = array.filteredArrayUsingPredicate(NSPredicate(format:"name CONTAINS %@", searchBar.text!))
+        
+        print("filteredArray has \(filteredArray.count)")
     }
 }
 

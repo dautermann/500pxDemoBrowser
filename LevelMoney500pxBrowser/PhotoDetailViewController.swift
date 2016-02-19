@@ -38,7 +38,16 @@ class PhotoDetailViewController: UIViewController {
             if let photoURL = NSURL(string: photoURLString)
             {
                 PhotoBrowserCache.sharedInstance.performGetPhotoURLFrom500pxServer(forURL: photoURL, intoImageView: imageView!)
+                setPhotoTitle()
             }
+        }
+    }
+    
+    func setPhotoTitle()
+    {
+        if let title = photoDict!["name"] as? String
+        {
+            self.navigationItem.title = title
         }
     }
     
@@ -53,6 +62,7 @@ class PhotoDetailViewController: UIViewController {
             if let photoURL = NSURL(string: photoURLString)
             {
                 PhotoBrowserCache.sharedInstance.transitionToThisPhotoURLFrom500pxServer(photoURL, intoImageView: imageView!, viaGestureRecognizer: gestureRecognizer)
+                setPhotoTitle()
             }
         }
     }
