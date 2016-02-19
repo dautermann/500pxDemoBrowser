@@ -15,6 +15,7 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
     var urlSession : NSURLSession
     
     var photoArray : [NSDictionary]? // I'm not the biggest fan of mixing Foundation types and native Swift types for a demo app, but I'm under time pressure to deliver
+    var filteredPhotoArray : [NSDictionary]?
     
     required init?(coder aDecoder: NSCoder) {
         urlSession = NSURLSession.sharedSession()
@@ -107,56 +108,93 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
     
     func getNextPhotoFrom(photoDict : NSDictionary?) -> NSDictionary?
     {
-        guard let photoArray = photoArray else {
-            return nil
-        }
+        let currentIndex = getIndexOfPhotoDict(photoDict)
         
-        var newPhotoDict : NSDictionary? = nil
-        
-        if photoArray.count > 0
+        if var currentIndex = currentIndex
         {
-            var currentIndex : Int
-            
-            if let photoDict = photoDict
+            if currentIndex > 0
             {
-                currentIndex = photoArray.indexOf(photoDict)!
-            } else {
-                currentIndex = 0
+                currentIndex++
+                return(getPhotoDictAtIndex(currentIndex))
             }
-            
-            newPhotoDict = photoArray[currentIndex+1];
         }
-        return newPhotoDict
+        return nil
     }
     
     func getPreviousPhotoFrom(photoDict: NSDictionary?) -> NSDictionary?
     {
-        guard let photoArray = photoArray else {
+        let currentIndex = getIndexOfPhotoDict(photoDict)
+        
+        if var currentIndex = currentIndex
+        {
+            if currentIndex > 0
+            {
+                currentIndex--
+                return(getPhotoDictAtIndex(currentIndex))
+            }
+        }
+        return nil
+    }
+    
+    func getIndexOfPhotoDict(photoDict:NSDictionary?) -> Int?
+    {
+        guard let photoDict = photoDict else {
+            return -1
+        }
+        
+        var activePhotoArray = filteredPhotoArray
+        
+        if activePhotoArray == nil
+        {
+            activePhotoArray = self.photoArray
+            
+            if activePhotoArray == nil
+            {
+                // no active search filter nor any photos currently visible
+                return -1
+            }
+        }
+        
+        return(activePhotoArray!.indexOf(photoDict))
+    }
+    
+    func getPhotoDictAtIndex(indexNumber:Int) -> NSDictionary?
+    {
+        var activePhotoArray = filteredPhotoArray
+        
+        if activePhotoArray == nil
+        {
+            activePhotoArray = self.photoArray
+            
+            if activePhotoArray == nil
+            {
+                // no active search filter nor any photos currently visible
+                return nil
+            }
+        }
+        
+        if indexNumber >= activePhotoArray!.count
+        {
             return nil
         }
         
-        var newPhotoDict : NSDictionary? = nil
-        
-        if photoArray.count > 1
-        {
-            var currentIndex : Int
-            
-            if let photoDict = photoDict
-            {
-                currentIndex = photoArray.indexOf(photoDict)!
-                newPhotoDict = photoArray[currentIndex-1];
-            }
-        }
-        return newPhotoDict
+        return(activePhotoArray![indexNumber])
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if self.photoArray == nil
+        
+        // if we're filtering (searching) on anything, return the result count
+        if let filteredPhotoArray = self.filteredPhotoArray
         {
-            return 0
-        } else {
-            return photoArray!.count
+            return filteredPhotoArray.count
         }
+        
+        if let photoArray = self.photoArray
+        {
+            return photoArray.count
+        }
+        
+        return 0
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -165,32 +203,32 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
         
         // I'm not too worried about dereferencing here because cellForRowAtIndexPath only gets called
         // with a valid row number thanks to the numberOfRowsInSection function above
-        let photoDict = self.photoArray![indexPath.row]
-        
-        if let userDict = photoDict["user"]
+        if let photoDict = getPhotoDictAtIndex(indexPath.row)
         {
-            tableCell.userNameLabel.text = userDict["fullname"] as? String
-
-            if let avatarURLString = userDict.valueForKeyPath("avatars.large.https") as? String
+            if let userDict = photoDict["user"]
             {
-                if let photoURL = NSURL(string: avatarURLString)
+                tableCell.userNameLabel.text = userDict["fullname"] as? String
+
+                if let avatarURLString = userDict.valueForKeyPath("avatars.large.https") as? String
                 {
-                    PhotoBrowserCache.sharedInstance.performGetPhotoURLFrom500pxServer(forURL: photoURL, intoImageView: tableCell.userThumbnailImageView!)
+                    if let photoURL = NSURL(string: avatarURLString)
+                    {
+                        PhotoBrowserCache.sharedInstance.performGetPhotoURLFrom500pxServer(forURL: photoURL, intoImageView: tableCell.userThumbnailImageView!)
+                    }
                 }
             }
-        }
 
-        tableCell.titleLabel.text = photoDict["name"] as? String
-        if let photoURLString = photoDict["image_url"] as? String
-        {
-            if let photoURL = NSURL(string: photoURLString)
+            tableCell.titleLabel.text = photoDict["name"] as? String
+            if let photoURLString = photoDict["image_url"] as? String
             {
-                PhotoBrowserCache.sharedInstance.performGetPhotoURLFrom500pxServer(forURL: photoURL, intoImageView: tableCell.photoImageView!)
+                if let photoURL = NSURL(string: photoURLString)
+                {
+                    PhotoBrowserCache.sharedInstance.performGetPhotoURLFrom500pxServer(forURL: photoURL, intoImageView: tableCell.photoImageView!)
+                }
             }
+            
+            tableCell.selectionStyle = .Blue
         }
-        
-        tableCell.selectionStyle = .Blue
-        
         return tableCell
     }
     
@@ -198,14 +236,28 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
         self.performSegueWithIdentifier("ShowDetail", sender: self)
     }
     
+    func searchBarCancelButtonClicked(searchBar: UISearchBar)
+    {
+        self.filteredPhotoArray = nil
+        self.tableView.reloadData()
+    }
+    
     func searchBarSearchButtonClicked(searchBar: UISearchBar)
     {
         print("search for titles that contain \(searchBar.text)")
-        let array = NSArray(array: photoArray!)
         
-        let filteredArray = array.filteredArrayUsingPredicate(NSPredicate(format:"name CONTAINS %@", searchBar.text!))
-        
-        print("filteredArray has \(filteredArray.count)")
+        // if the user simply empties out the string, then they are removing the search filter
+        if(searchBar.text!.characters.count == 0)
+        {
+            searchBarCancelButtonClicked(searchBar);
+        } else {
+            let array = NSArray(array: photoArray!)
+            
+            self.filteredPhotoArray = array.filteredArrayUsingPredicate(NSPredicate(format:"name CONTAINS %@", searchBar.text!)) as? [NSDictionary]
+            
+            print("filteredArray has \(self.filteredPhotoArray?.count)")
+            self.tableView.reloadData()
+        }
     }
 }
 
