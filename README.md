@@ -14,3 +14,7 @@ Put everything into Core Data to make it somewhat persistent and available off-l
 3)
 
 I can think of a few Unit / XCTests that I could possibly do, but I ran out of time to work these up.
+
+4)
+
+More visual polish (translucent / opaque under the photo table / collection view on the main screen) and more user-friendly bells & whistles.

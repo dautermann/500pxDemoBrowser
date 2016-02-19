@@ -11,6 +11,8 @@ import UIKit
 class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLSessionTaskDelegate, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
 
     @IBOutlet var tableView : UITableView!
+    @IBOutlet var categoryButton : UIButton!
+    @IBOutlet var searchBar : UISearchBar!
     
     var urlSession : NSURLSession
     
@@ -53,7 +55,7 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
 
     func performGetFrom500pxServer(forPage pageNumber :Int)
     {
-        let requestURLString = "https://api.500px.com/v1/photos?feature=popular&image_size=600&page=\(pageNumber)&consumer_key=L5JIFnakAfeIGbjDwrVdvEzG3N2HisdJL9wS0apV"
+        let requestURLString = "https://api.500px.com/v1/photos?feature=popular&page=\(pageNumber)&image_size=600&consumer_key=L5JIFnakAfeIGbjDwrVdvEzG3N2HisdJL9wS0apV"
         let request = NSMutableURLRequest(URL: NSURL(string:requestURLString)!)
         
         request.HTTPMethod = "GET"
@@ -181,6 +183,8 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
         return(activePhotoArray![indexNumber])
     }
     
+    // MARK: table view data source & delegate functions
+    
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         // if we're filtering (searching) on anything, return the result count
@@ -235,6 +239,8 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         self.performSegueWithIdentifier("ShowDetail", sender: self)
     }
+    
+    // MARK: search bar functionality
     
     func searchBarCancelButtonClicked(searchBar: UISearchBar)
     {

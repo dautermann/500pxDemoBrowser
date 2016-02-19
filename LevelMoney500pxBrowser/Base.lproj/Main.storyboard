@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9531" systemVersion="14F1605" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="bw2-GB-8Hm">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="9531" systemVersion="15C50" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="bw2-GB-8Hm">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
@@ -19,7 +19,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <searchBar contentMode="redraw" translatesAutoresizingMaskIntoConstraints="NO" id="dbh-iT-oGa">
-                                <rect key="frame" x="15" y="20" width="435" height="44"/>
+                                <rect key="frame" x="15" y="20" width="450" height="44"/>
                                 <textInputTraits key="textInputTraits"/>
                                 <connections>
                                     <outlet property="delegate" destination="BYZ-38-t0r" id="k3v-d4-Idu"/>
@@ -87,26 +87,40 @@
                                     <outlet property="delegate" destination="BYZ-38-t0r" id="XvO-3n-99U"/>
                                 </connections>
                             </tableView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="E7b-il-jgL">
+                                <rect key="frame" x="480" y="28" width="100" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="100" id="9uZ-C8-0pw"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="CVc-9i-Mrm" secondAttribute="bottom" constant="20" id="5Hq-lu-oQm"/>
+                            <constraint firstItem="E7b-il-jgL" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="8" id="5p3-Wj-2Tz"/>
                             <constraint firstItem="CVc-9i-Mrm" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="15" id="GTz-3I-Fd8"/>
                             <constraint firstItem="CVc-9i-Mrm" firstAttribute="top" secondItem="dbh-iT-oGa" secondAttribute="bottom" constant="6" id="JLM-zj-9wP"/>
                             <constraint firstItem="dbh-iT-oGa" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="15" id="JQd-So-TKw"/>
-                            <constraint firstAttribute="trailing" secondItem="dbh-iT-oGa" secondAttribute="trailing" constant="150" id="Mk1-Gi-Pnm"/>
+                            <constraint firstAttribute="trailing" secondItem="dbh-iT-oGa" secondAttribute="trailing" symbolic="YES" id="Mk1-Gi-Pnm"/>
                             <constraint firstItem="CVc-9i-Mrm" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="30" id="RKZ-pG-bSS"/>
                             <constraint firstItem="dbh-iT-oGa" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="topMargin" constant="20" id="gHb-dW-wog"/>
                             <constraint firstItem="CVc-9i-Mrm" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailing" constant="-15" id="k4b-zC-NFe"/>
+                            <constraint firstItem="E7b-il-jgL" firstAttribute="leading" secondItem="dbh-iT-oGa" secondAttribute="trailing" constant="15" id="nEA-I4-oAa"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="E7b-il-jgL" secondAttribute="trailing" id="pwr-M9-3HI"/>
                         </constraints>
                         <variation key="default">
                             <mask key="constraints">
+                                <exclude reference="Mk1-Gi-Pnm"/>
                                 <exclude reference="RKZ-pG-bSS"/>
                             </mask>
                         </variation>
                     </view>
                     <navigationItem key="navigationItem" id="f7b-ip-Dfh"/>
+                    <nil key="simulatedTopBarMetrics"/>
                     <connections>
+                        <outlet property="categoryButton" destination="E7b-il-jgL" id="Ze0-Ns-tyn"/>
+                        <outlet property="searchBar" destination="dbh-iT-oGa" id="b5w-cE-IMO"/>
                         <outlet property="tableView" destination="CVc-9i-Mrm" id="ciW-cy-y18"/>
                         <segue destination="JOl-ac-zTI" kind="show" identifier="ShowDetail" id="cwM-ii-mPm"/>
                     </connections>
