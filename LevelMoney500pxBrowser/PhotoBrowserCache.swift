@@ -79,20 +79,78 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
         })
         task.resume()
     }
-}
-
-extension UIImage
-{
-    func roundImage() -> UIImage
+    
+    private func doTheActualTransition(withImage: UIImage, intoImageView imageView: UIImageView, withTransition transition: String)
     {
-        let newImage = self.copy() as! UIImage
-        let cornerRadius = self.size.height/2
-        UIGraphicsBeginImageContextWithOptions(self.size, false, 1.0)
-        let bounds = CGRect(origin: CGPointZero, size: self.size)
-        UIBezierPath(roundedRect: bounds, cornerRadius: cornerRadius).addClip()
-        newImage.drawInRect(bounds)
-        let finalImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return finalImage
+        dispatch_async(dispatch_get_main_queue(), { () -> Void in
+            
+            imageView.image = withImage
+            let animation = CATransition()
+            animation.duration = 1.0
+            animation.type = kCATransitionPush
+            animation.subtype = transition
+            animation.timingFunction = CAMediaTimingFunction(name:kCAMediaTimingFunctionEaseOut)
+            imageView.layer.addAnimation(animation, forKey: nil)
+
+        })
+    }
+    
+    
+    func transitionToThisPhotoURLFrom500pxServer(urlToFetch: NSURL, intoImageView imageView: UIImageView, viaGestureRecognizer gestureRecognizer: UISwipeGestureRecognizer)
+    {
+        var transition : String
+        
+        switch gestureRecognizer.direction {
+        case UISwipeGestureRecognizerDirection.Right :
+            transition = kCATransitionFromRight
+        case UISwipeGestureRecognizerDirection.Left :
+            transition = kCATransitionFromLeft
+        case UISwipeGestureRecognizerDirection.Down :
+            transition = kCATransitionFromTop
+        case UISwipeGestureRecognizerDirection.Up :
+            transition = kCATransitionFromBottom
+        default :
+            print("a swipe case I wasn't expecting")
+            return
+        }
+
+        let cacheFilename = getFilenameFromURL(urlToFetch)
+        let cacheURL = NSURL(fileURLWithPath: "/tmp/\(cacheFilename)")
+        
+        let imageData = NSData.init(contentsOfURL: cacheURL)
+        
+        if let imageData = imageData
+        {
+            if let image = UIImage(data: imageData)
+            {
+                doTheActualTransition(image, intoImageView: imageView, withTransition: transition)
+                return
+            }
+        }
+
+        // imageData was either nil (not cached yet) or invalid, so let's go download it
+        let request = NSMutableURLRequest(URL: urlToFetch)
+        request.HTTPMethod = "GET"
+        let task = urlSession.dataTaskWithRequest(request, completionHandler: {data, response, error -> Void in
+            // make the image view weak within the block in the case it goes offscreen and/otherwise becomes junk/nil
+            weak var weakImageView = imageView
+            
+            // the data that comes back isn't JSON, but instead it's picture data!
+            if let data = data
+            {
+                if let image = UIImage(data: data)
+                {
+                    self.doTheActualTransition(image, intoImageView: weakImageView!, withTransition: transition)
+                
+                    do {
+                        try data.writeToURL(cacheURL, options: .AtomicWrite)
+                    } catch let error as NSError {
+                        print("couldn't write data to \(cacheURL.absoluteString) - \(error.localizedDescription)")
+                    }
+                }
+            }
+        })
+        task.resume()
     }
 }
+

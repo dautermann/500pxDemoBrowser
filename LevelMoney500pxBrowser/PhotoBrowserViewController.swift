@@ -85,9 +85,55 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
             
             if let indexPath = self.tableView.indexPathForSelectedRow
             {
+                destinationVC.parentVC = self
                 destinationVC.photoDict = photoArray![indexPath.row]
             }
         }
+    }
+    
+    func getNextPhotoFrom(photoDict : NSDictionary?) -> NSDictionary?
+    {
+        guard let photoArray = photoArray else {
+            return nil
+        }
+        
+        var newPhotoDict : NSDictionary? = nil
+        
+        if photoArray.count > 0
+        {
+            var currentIndex : Int
+            
+            if let photoDict = photoDict
+            {
+                currentIndex = photoArray.indexOf(photoDict)!
+            } else {
+                currentIndex = 0
+            }
+            
+            newPhotoDict = photoArray[currentIndex+1];
+        }
+        return newPhotoDict
+    }
+    
+    func getPreviousPhotoFrom(photoDict: NSDictionary?) -> NSDictionary?
+    {
+        guard let photoArray = photoArray else {
+            return nil
+        }
+        
+        var newPhotoDict : NSDictionary? = nil
+        
+        if photoArray.count > 1
+        {
+            var currentIndex : Int
+            
+            if let photoDict = photoDict
+            {
+                currentIndex = photoArray.indexOf(photoDict)!
+                newPhotoDict = photoArray[currentIndex-1];
+            }
+        }
+        return newPhotoDict
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
