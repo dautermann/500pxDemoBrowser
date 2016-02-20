@@ -119,7 +119,10 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
         })
     }
     
-    
+    // totally ironically (and I don't know if anyone is reading this, because I didn't include this comment
+    // in the repo I sent back to the interviewer), the below function is a modernized Swift version of a function
+    // I delivered to Capital One (the company that currently owns LevelMoney) in a previous coding assignment
+    // found here -> https://github.com/dautermann/CapitalOneImageSwipeTest/blob/master/SlideViewTest/ViewController.m
     func transitionToThisPhotoURLFrom500pxServer(urlToFetch: NSURL, intoImageView imageView: LMImageView, viaGestureRecognizer gestureRecognizer: UISwipeGestureRecognizer)
     {
         var transition : String
