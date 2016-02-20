@@ -12,17 +12,15 @@ class PhotoBrowserTableViewCell: UITableViewCell {
 
     @IBOutlet var titleLabel : UILabel!
     @IBOutlet var userNameLabel : UILabel!
-    @IBOutlet var photoImageView : UIImageView!
+    @IBOutlet var photoImageView : LMImageView!
     @IBOutlet var userThumbnailImageView : CircleImageView!
     
     override func awakeFromNib() {
         super.awakeFromNib()
     }
 
-    override func setSelected(selected: Bool, animated: Bool) {
-        super.setSelected(selected, animated: animated)
-
-        // Configure the view for the selected state
+    override func prepareForReuse() {
+        photoImageView.image = nil
+        photoImageView.imageURL = nil
     }
-
 }

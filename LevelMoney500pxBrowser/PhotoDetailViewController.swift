@@ -10,7 +10,7 @@ import UIKit
 
 class PhotoDetailViewController: UIViewController {
     
-    @IBOutlet var imageView : UIImageView!
+    @IBOutlet var imageView : LMImageView!
     
     var parentVC : PhotoBrowserViewController?
     var photoDict : NSDictionary?
@@ -43,6 +43,7 @@ class PhotoDetailViewController: UIViewController {
         {
             if let photoURL = NSURL(string: photoURLString)
             {
+                imageView.imageURL = photoURL
                 PhotoBrowserCache.sharedInstance.performGetPhotoURLFrom500pxServer(forURL: photoURL, intoImageView: imageView!)
                 setPhotoTitle()
             }
@@ -67,6 +68,7 @@ class PhotoDetailViewController: UIViewController {
         {
             if let photoURL = NSURL(string: photoURLString)
             {
+                imageView.imageURL = photoURL
                 PhotoBrowserCache.sharedInstance.transitionToThisPhotoURLFrom500pxServer(photoURL, intoImageView: imageView!, viaGestureRecognizer: gestureRecognizer)
                 setPhotoTitle()
             }
@@ -76,15 +78,23 @@ class PhotoDetailViewController: UIViewController {
     @IBAction func swipeRight(sender: UISwipeGestureRecognizer)
     {
         // go to previous picture, if available
-        photoDict = parentVC?.getPreviousPhotoFrom(photoDict)
-        doTransition(sender)
+        let newPhotoDict = parentVC?.getPreviousPhotoFrom(photoDict)
+        if newPhotoDict != photoDict
+        {
+            photoDict = newPhotoDict
+            doTransition(sender)
+        }
     }
 
     @IBAction func swipeLeft(sender: UISwipeGestureRecognizer)
     {
         // go to next picture, if available
-        photoDict = parentVC?.getNextPhotoFrom(photoDict)
-        doTransition(sender)
+        let newPhotoDict = parentVC?.getNextPhotoFrom(photoDict)
+        if newPhotoDict != photoDict
+        {
+            photoDict = newPhotoDict
+            doTransition(sender)
+        }
     }
 
 }

@@ -8,13 +8,18 @@
 
 import UIKit
 
-class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLSessionTaskDelegate, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
+class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLSessionTaskDelegate, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, UIPickerViewDataSource, UIPickerViewDelegate {
 
     @IBOutlet var tableView : UITableView!
     @IBOutlet var categoryButton : UIButton!
+    @IBOutlet var categoryPicker : UIPickerView!
     @IBOutlet var searchBar : UISearchBar!
     
     var urlSession : NSURLSession
+    var latestPage : Int = 1
+    var totalPages : Int = 0
+    
+    var pickerDataSource = ["popular", "highest_rated", "upcoming", "editors", "fresh_today", "fresh_yesterday", "fresh_week"]
     
     var photoArray : [NSDictionary]? // I'm not the biggest fan of mixing Foundation types and native Swift types for a demo app, but I'm under time pressure to deliver
     var filteredPhotoArray : [NSDictionary]?
@@ -55,7 +60,8 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
 
     func performGetFrom500pxServer(forPage pageNumber :Int)
     {
-        let requestURLString = "https://api.500px.com/v1/photos?feature=popular&page=\(pageNumber)&image_size=600&consumer_key=L5JIFnakAfeIGbjDwrVdvEzG3N2HisdJL9wS0apV"
+        let categoryString = categoryButton.titleForState(.Normal)
+        let requestURLString = "https://api.500px.com/v1/photos?feature=\(categoryString!)&page=\(pageNumber)&image_size=600&consumer_key=L5JIFnakAfeIGbjDwrVdvEzG3N2HisdJL9wS0apV"
         let request = NSMutableURLRequest(URL: NSURL(string:requestURLString)!)
         
         request.HTTPMethod = "GET"
@@ -64,10 +70,14 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
             do {
                 let json = try NSJSONSerialization.JSONObjectWithData(data!, options: []) as? [String:AnyObject]
                 
+
+                if let totalPages = json!["total_pages"] as? Int
+                {
+                    self.totalPages = totalPages
+                }
+                
                 if let newPhotoArray = json!["photos"] as? [NSDictionary]
                 {
-                    print("photoArray is \(newPhotoArray)")
-                    
                     if self.photoArray == nil {
                         self.photoArray = newPhotoArray
                     } else {
@@ -75,8 +85,10 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
                     }
                     
                     print("photo array has \(self.photoArray!.count) entries")
-                    
+
                     dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                        
+                        print(" calling reload data")
                         self.tableView.reloadData()
                     })
                 } else {
@@ -103,7 +115,7 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
             if let indexPath = self.tableView.indexPathForSelectedRow
             {
                 destinationVC.parentVC = self
-                destinationVC.photoDict = photoArray![indexPath.row]
+                destinationVC.photoDict = getPhotoDictAtIndex(indexPath.row)
             }
         }
     }
@@ -114,7 +126,7 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
         
         if var currentIndex = currentIndex
         {
-            if currentIndex > 0
+            if currentIndex >= 0
             {
                 currentIndex++
                 return(getPhotoDictAtIndex(currentIndex))
@@ -183,6 +195,17 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
         return(activePhotoArray![indexNumber])
     }
     
+    @IBAction func categoryButtonTouched(sender: UIButton)
+    {
+        categoryPicker.hidden = false;
+        categoryPicker.backgroundColor = UIColor.whiteColor()
+        
+        // cheap and dirty way of disabling the photo picker
+        tableView.userInteractionEnabled = false;
+        tableView.alpha = 0.3
+        tableView.backgroundColor = UIColor.blackColor()
+    }
+    
     // MARK: table view data source & delegate functions
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -217,6 +240,7 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
                 {
                     if let photoURL = NSURL(string: avatarURLString)
                     {
+                        tableCell.userThumbnailImageView!.imageURL = photoURL
                         PhotoBrowserCache.sharedInstance.performGetPhotoURLFrom500pxServer(forURL: photoURL, intoImageView: tableCell.userThumbnailImageView!)
                     }
                 }
@@ -227,6 +251,7 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
             {
                 if let photoURL = NSURL(string: photoURLString)
                 {
+                    tableCell.photoImageView!.imageURL = photoURL
                     PhotoBrowserCache.sharedInstance.performGetPhotoURLFrom500pxServer(forURL: photoURL, intoImageView: tableCell.photoImageView!)
                 }
             }
@@ -240,18 +265,53 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
         self.performSegueWithIdentifier("ShowDetail", sender: self)
     }
     
+    func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
+        
+        // I'm only going to do this paging thing if we're not doing a current search filter at the moment
+        if filteredPhotoArray == nil
+        {
+            if let photoArray = self.photoArray
+            {
+                if indexPath.row >= photoArray.count - 1
+                {
+                    latestPage++
+                    
+                    // I probably need to check to see if page 1000 will get returned
+                    // from the server when it says there are 1000 total pages
+                    //
+                    if latestPage <= totalPages
+                    {
+                        performGetFrom500pxServer(forPage: latestPage)
+                    }
+                }
+            }
+        }
+    }
+    
     // MARK: search bar functionality
     
     func searchBarCancelButtonClicked(searchBar: UISearchBar)
     {
+        searchBar.text = ""
         self.filteredPhotoArray = nil
         self.tableView.reloadData()
     }
     
+    // need to hook into the clear button of the search bar?
+    // http://stackoverflow.com/a/33916306/981049
+    func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.characters.count == 0 {
+            performSelector("hideKeyboardWithSearchBar:", withObject:searchBar, afterDelay:0)
+        }
+    }
+    
+    func hideKeyboardWithSearchBar(searchBar:UISearchBar) {
+        searchBar.resignFirstResponder()
+        searchBarCancelButtonClicked(searchBar)
+    }
+    
     func searchBarSearchButtonClicked(searchBar: UISearchBar)
     {
-        print("search for titles that contain \(searchBar.text)")
-        
         // if the user simply empties out the string, then they are removing the search filter
         if(searchBar.text!.characters.count == 0)
         {
@@ -261,9 +321,36 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
             
             self.filteredPhotoArray = array.filteredArrayUsingPredicate(NSPredicate(format:"name CONTAINS %@", searchBar.text!)) as? [NSDictionary]
             
-            print("filteredArray has \(self.filteredPhotoArray?.count)")
             self.tableView.reloadData()
         }
+    }
+    
+    // MARK: picker view functionality
+    func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return pickerDataSource.count;
+    }
+    
+    func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return pickerDataSource[row]
+    }
+    
+    func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        print("did select row \(pickerDataSource[row])")
+        categoryButton.setTitle(pickerDataSource[row], forState: .Normal)
+        filteredPhotoArray = nil
+        self.photoArray = nil
+        latestPage = 1
+        totalPages = 0
+        searchBar.text = ""
+        performGetFrom500pxServer(forPage: 1)
+        pickerView.hidden = true
+        tableView.userInteractionEnabled = true
+        tableView.alpha = 1.0
+        tableView.backgroundColor = UIColor.clearColor()
     }
 }
 

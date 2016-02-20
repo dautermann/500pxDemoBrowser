@@ -19,7 +19,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <searchBar contentMode="redraw" translatesAutoresizingMaskIntoConstraints="NO" id="dbh-iT-oGa">
-                                <rect key="frame" x="15" y="20" width="450" height="44"/>
+                                <rect key="frame" x="15" y="20" width="430" height="44"/>
                                 <textInputTraits key="textInputTraits"/>
                                 <connections>
                                     <outlet property="delegate" destination="BYZ-38-t0r" id="k3v-d4-Idu"/>
@@ -36,7 +36,7 @@
                                             <rect key="frame" x="0.0" y="0.0" width="570" height="149"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="YSX-vP-txv">
+                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="YSX-vP-txv" customClass="LMImageView" customModule="LevelMoney500pxBrowser" customModuleProvider="target">
                                                     <rect key="frame" x="0.0" y="0.0" width="570" height="149"/>
                                                 </imageView>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="258-5w-Inf" customClass="CircleImageView" customModule="LevelMoney500pxBrowser" customModuleProvider="target">
@@ -87,18 +87,30 @@
                                     <outlet property="delegate" destination="BYZ-38-t0r" id="XvO-3n-99U"/>
                                 </connections>
                             </tableView>
+                            <pickerView hidden="YES" contentMode="scaleToFill" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="7Sm-VK-m23">
+                                <rect key="frame" x="0.0" y="192" width="600" height="216"/>
+                                <connections>
+                                    <outlet property="dataSource" destination="BYZ-38-t0r" id="lf2-Lo-sgU"/>
+                                    <outlet property="delegate" destination="BYZ-38-t0r" id="Ran-cC-phO"/>
+                                </connections>
+                            </pickerView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="E7b-il-jgL">
-                                <rect key="frame" x="480" y="28" width="100" height="30"/>
+                                <rect key="frame" x="460" y="28" width="120" height="30"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="100" id="9uZ-C8-0pw"/>
+                                    <constraint firstAttribute="width" constant="120" id="9uZ-C8-0pw"/>
                                 </constraints>
-                                <state key="normal" title="Button"/>
+                                <state key="normal" title="popular"/>
+                                <connections>
+                                    <action selector="categoryButtonTouched:" destination="BYZ-38-t0r" eventType="touchUpInside" id="CiC-Cl-nsI"/>
+                                </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="CVc-9i-Mrm" secondAttribute="bottom" constant="20" id="5Hq-lu-oQm"/>
                             <constraint firstItem="E7b-il-jgL" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="8" id="5p3-Wj-2Tz"/>
+                            <constraint firstItem="7Sm-VK-m23" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="CRd-EL-eZp"/>
+                            <constraint firstItem="7Sm-VK-m23" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="Cc3-Lv-Ncp"/>
                             <constraint firstItem="CVc-9i-Mrm" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="15" id="GTz-3I-Fd8"/>
                             <constraint firstItem="CVc-9i-Mrm" firstAttribute="top" secondItem="dbh-iT-oGa" secondAttribute="bottom" constant="6" id="JLM-zj-9wP"/>
                             <constraint firstItem="dbh-iT-oGa" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="15" id="JQd-So-TKw"/>
@@ -120,6 +132,7 @@
                     <nil key="simulatedTopBarMetrics"/>
                     <connections>
                         <outlet property="categoryButton" destination="E7b-il-jgL" id="Ze0-Ns-tyn"/>
+                        <outlet property="categoryPicker" destination="7Sm-VK-m23" id="QzZ-wc-XKf"/>
                         <outlet property="searchBar" destination="dbh-iT-oGa" id="b5w-cE-IMO"/>
                         <outlet property="tableView" destination="CVc-9i-Mrm" id="ciW-cy-y18"/>
                         <segue destination="JOl-ac-zTI" kind="show" identifier="ShowDetail" id="cwM-ii-mPm"/>
@@ -141,7 +154,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fRd-Il-RmU">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="fRd-Il-RmU" customClass="LMImageView" customModule="LevelMoney500pxBrowser" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="20" width="600" height="580"/>
                             </imageView>
                         </subviews>

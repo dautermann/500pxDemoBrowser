@@ -34,7 +34,7 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
         return originalURLString.stringByAddingPercentEncodingWithAllowedCharacters(.URLHostAllowedCharacterSet())!
     }
     
-    func performGetPhotoURLFrom500pxServer(forURL urlToFetch: NSURL, intoImageView imageView: UIImageView)
+    func performGetPhotoURLFrom500pxServer(forURL urlToFetch: NSURL, intoImageView imageView: LMImageView)
     {
         // our crafty (and simple) cache simply saves the very unique (or UUID-looking) filename 
         // into the caches folder...
@@ -66,9 +66,12 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
             {
                 let image = UIImage(data: data)
                 
-                dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                    weakImageView?.image = image
-                })
+                if weakImageView!.imageURL == urlToFetch
+                {
+                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                        weakImageView?.image = image
+                    })
+                }
 
                 do {
                     try data.writeToURL(cacheURL, options: .AtomicWrite)
@@ -80,7 +83,7 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
         task.resume()
     }
     
-    private func doTheActualTransition(withImage: UIImage, intoImageView imageView: UIImageView, withTransition transition: String)
+    private func doTheActualTransition(withImage: UIImage, intoImageView imageView: LMImageView, withTransition transition: String)
     {
         dispatch_async(dispatch_get_main_queue(), { () -> Void in
             
@@ -96,14 +99,14 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
     }
     
     
-    func transitionToThisPhotoURLFrom500pxServer(urlToFetch: NSURL, intoImageView imageView: UIImageView, viaGestureRecognizer gestureRecognizer: UISwipeGestureRecognizer)
+    func transitionToThisPhotoURLFrom500pxServer(urlToFetch: NSURL, intoImageView imageView: LMImageView, viaGestureRecognizer gestureRecognizer: UISwipeGestureRecognizer)
     {
         var transition : String
         
         switch gestureRecognizer.direction {
-        case UISwipeGestureRecognizerDirection.Right :
-            transition = kCATransitionFromRight
         case UISwipeGestureRecognizerDirection.Left :
+            transition = kCATransitionFromRight
+        case UISwipeGestureRecognizerDirection.Right :
             transition = kCATransitionFromLeft
         case UISwipeGestureRecognizerDirection.Down :
             transition = kCATransitionFromTop
@@ -140,7 +143,10 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
             {
                 if let image = UIImage(data: data)
                 {
-                    self.doTheActualTransition(image, intoImageView: weakImageView!, withTransition: transition)
+                    if weakImageView!.imageURL == urlToFetch
+                    {
+                        self.doTheActualTransition(image, intoImageView: weakImageView!, withTransition: transition)
+                    }
                 
                     do {
                         try data.writeToURL(cacheURL, options: .AtomicWrite)

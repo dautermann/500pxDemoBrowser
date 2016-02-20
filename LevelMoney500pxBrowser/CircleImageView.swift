@@ -8,7 +8,11 @@
 
 import UIKit
 
-class CircleImageView: UIImageView {
+class LMImageView: UIImageView {
+    var imageURL : NSURL?
+}
+
+class CircleImageView: LMImageView {
 
     // handy code found at http://stackoverflow.com/questions/7399343/making-a-uiimage-to-a-circle-form
     override var image: UIImage? {
