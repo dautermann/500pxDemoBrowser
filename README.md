@@ -15,7 +15,7 @@ A UIImageView subclass that keeps track of which image URL is (or is about to be
 
 A second UIImageView subclass that comes up with sexy circular user profile images.
 
-## What you didn't ask for but you get for free:
+## What wasn't asked for but I did for free and as a bonus:
 
 Button in the top right brings up a picker that allows you to choose from different categories
 
