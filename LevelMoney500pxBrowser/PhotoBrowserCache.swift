@@ -13,7 +13,7 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
     
     static let sharedInstance = PhotoBrowserCache()
     
-    var cacheFolder : NSURL
+    var cacheFolderURL : NSURL
     
     var urlSession : NSURLSession
 
@@ -23,7 +23,7 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
         // I dislike having to do these "placeholder" temporary property settings before doing the real thing
         // later on. more info at: http://stackoverflow.com/a/28431379/981049
         urlSession = NSURLSession.sharedSession()
-        cacheFolder = NSURL(fileURLWithPath: "/tmp")
+        cacheFolderURL = NSURL(fileURLWithPath: "/tmp")
         
         super.init()
         
@@ -31,7 +31,7 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
         
         if cachesDirectory.count > 0
         {
-            cacheFolder = NSURL(fileURLWithPath: cachesDirectory[0])
+            cacheFolderURL = NSURL(fileURLWithPath: cachesDirectory[0])
         } else {
             print("uh oh... there is no cache folder in this sandbox! -- guess we'll use /tmp for now")
         }
@@ -52,9 +52,9 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
         // our crafty (and simple) cache simply saves the very unique (or UUID-looking) filename 
         // into the caches folder...
         let cacheFilename = getFilenameFromURL(urlToFetch)
-        let cacheURL = NSURL(fileURLWithPath: "/tmp/\(cacheFilename)")
+        let cachedFilenameURL = cacheFolderURL.URLByAppendingPathComponent(cacheFilename)
 
-        let imageData = NSData.init(contentsOfURL: cacheURL)
+        let imageData = NSData.init(contentsOfURL: cachedFilenameURL)
         
         if let imageData = imageData
         {
@@ -87,9 +87,9 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
                 }
 
                 do {
-                    try data.writeToURL(cacheURL, options: .AtomicWrite)
+                    try data.writeToURL(cachedFilenameURL, options: .AtomicWrite)
                 } catch let error as NSError {
-                    print("couldn't write data to \(cacheURL.absoluteString) - \(error.localizedDescription)")
+                    print("couldn't write data to \(cachedFilenameURL.absoluteString) - \(error.localizedDescription)")
                 }
             } else {
                 // this is sloppy and I'm sorry but I'm 2 minutes away from submitting this code back to you :-)

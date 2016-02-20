@@ -61,7 +61,7 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
     func performGetFrom500pxServer(forPage pageNumber :Int)
     {
         let categoryString = categoryButton.titleForState(.Normal)
-        let requestURLString = "https://api.500px.com/v1/photos?feature=\(categoryString!)&page=\(pageNumber)&image_size=600&consumer_key=L5JIFnakAfeIGbjDwrVdvEzG3N2HisdJL9wS0apV"
+        let requestURLString = "https://api.500px.com/v1/photos?feature=\(categoryString!)&page=\(pageNumber)&image_size=600&consumer_key=vW8Ns53y0F57vkbHeDfe3EsYFCatTJ3BrFlhgV3W"
         let request = NSMutableURLRequest(URL: NSURL(string:requestURLString)!)
         
         request.HTTPMethod = "GET"
@@ -347,7 +347,6 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
     }
     
     func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        print("did select row \(pickerDataSource[row])")
         categoryButton.setTitle(pickerDataSource[row], forState: .Normal)
         filteredPhotoArray = nil
         self.photoArray = nil

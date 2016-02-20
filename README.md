@@ -3,7 +3,7 @@
 
 ## Where did this come from?
 
-This interviewer's programming assignment.
+[This interviewer's programming assignment.](TheAssignment.md)
 
 ## What you need to add in order to be able to run it:
 
@@ -33,5 +33,5 @@ I did a simple cache so pictures don't need to be re-downloaded every time.
 
 5. More visual polish (translucent / opaque under the photo table / collection view on the main screen) and more user-friendly bells & whistles.
 
-6. 1. Improve error alerts & handling.
+6. Improve error alerts & handling.
 
