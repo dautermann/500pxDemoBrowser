@@ -83,13 +83,18 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
                     } else {
                         self.photoArray!.appendContentsOf(newPhotoArray)
                     }
-                    
-                    print("photo array has \(self.photoArray!.count) entries")
 
                     dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                        
-                        print(" calling reload data")
-                        self.tableView.reloadData()
+                        var indexPathArray : [NSIndexPath] = []
+                        let previousPage = self.latestPage - 1
+                        for var newRow = previousPage*20; newRow < self.latestPage*20; newRow++
+                        {
+                            let indexPath = NSIndexPath(forRow: newRow, inSection: 0)
+                            indexPathArray.append(indexPath)
+                        }
+                        self.tableView.beginUpdates()
+                        self.tableView.insertRowsAtIndexPaths(indexPathArray, withRowAnimation: UITableViewRowAnimation.Automatic)
+                        self.tableView.endUpdates()
                     })
                 } else {
                     // okay the json object was nil, something went wrong. Maybe the server isn't running?
@@ -102,7 +107,7 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
             }
             catch
             {
-                
+                // a catch all...
             }
         })
         task.resume()
@@ -346,6 +351,7 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
         latestPage = 1
         totalPages = 0
         searchBar.text = ""
+        self.tableView.reloadData()
         performGetFrom500pxServer(forPage: 1)
         pickerView.hidden = true
         tableView.userInteractionEnabled = true

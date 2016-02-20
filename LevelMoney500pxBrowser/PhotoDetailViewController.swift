@@ -17,15 +17,7 @@ class PhotoDetailViewController: UIViewController {
     
     
     override func viewDidLoad() {
-        
         super.viewDidLoad()
-        
-        if let navigationBar = self.navigationController?.navigationBar
-        {
-            navigationBar.setBackgroundImage(UIImage(), forBarMetrics: UIBarMetrics.Default)
-            navigationBar.shadowImage = UIImage()
-            navigationBar.translucent = true
-        }
     }
     
     override func viewWillAppear(animated: Bool) {

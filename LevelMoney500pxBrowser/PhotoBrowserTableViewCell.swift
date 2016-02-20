@@ -22,5 +22,7 @@ class PhotoBrowserTableViewCell: UITableViewCell {
     override func prepareForReuse() {
         photoImageView.image = nil
         photoImageView.imageURL = nil
+        userThumbnailImageView.image = nil
+        userThumbnailImageView.imageURL = nil
     }
 }
