@@ -1,5 +1,9 @@
 # LevelMoney500pxBrowser
-500px photo browser
+
+A demo mobile app that browses through photos found at the [500px.com](https://500pxcom) website.
+
+The reason the project starts off with the name LevelMoney is that this was a programming assignment for a potential role 
+at this Capital One subsidiary.
 
 ## Where did this come from?
 
