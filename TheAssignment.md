@@ -13,7 +13,7 @@ Process:
 
 Develop an app that parses the JSON from [this](https://api.500px.com/v1/photos?feature=popular&consumer_key=vW8Ns53y0F57vkbHeDfe3EsYFCatTJ3BrFlhgV3W) endpoint, and presents the encoded photos in a `UITableView` with cells set up like this:
 
-<a data-flickr-embed="true"  href="https://www.flickr.com/photos/raheel/21095477006/in/dateposted-public/" title="Image 9-3-15 at 2.34 PM"><img src="https://farm1.staticflickr.com/753/21095477006_1128b62ddb_b.jpg" width="550" height="200" alt="Image 9-3-15 at 2.34 PM"></a><script async src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></script>
+![Screenshot of what the cell should look like](IdealCellImage.jpg?raw=true "Screenshot of what the cell should look like")
 
 i.e., show the photo, the photo's title, the user's thumbnail, and the user's name.
 
