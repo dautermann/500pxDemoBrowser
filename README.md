@@ -5,10 +5,6 @@
 
 [This interviewer's programming assignment.](TheAssignment.md)
 
-## What you need to add in order to be able to run it:
-
-Your own consumer key (which you can set up at )
-
 ## What it comes with:
 
 A UIImageView subclass that keeps track of which image URL is (or is about to be) displayed, used to cancel loading an in progress image if the cell or view has gone off screen.
