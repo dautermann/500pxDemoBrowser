@@ -9,6 +9,8 @@
 import UIKit
 
 class LMImageView: UIImageView {
+    // keep track of this image view's URL, super useful in case we want 
+    // to cancel setting (or assigning) an image that doesn't match the view's current URL
     var imageURL : NSURL?
 }
 
