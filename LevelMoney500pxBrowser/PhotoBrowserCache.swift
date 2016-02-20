@@ -13,15 +13,28 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
     
     static let sharedInstance = PhotoBrowserCache()
     
+    var cacheFolder : NSURL
+    
     var urlSession : NSURLSession
 
+    // http://krakendev.io/blog/the-right-way-to-write-a-singleton
     private override init() {
         
         // I dislike having to do these "placeholder" temporary property settings before doing the real thing
         // later on. more info at: http://stackoverflow.com/a/28431379/981049
         urlSession = NSURLSession.sharedSession()
+        cacheFolder = NSURL(fileURLWithPath: "/tmp")
         
         super.init()
+        
+        let cachesDirectory = NSSearchPathForDirectoriesInDomains(.CachesDirectory, .UserDomainMask, true)
+        
+        if cachesDirectory.count > 0
+        {
+            cacheFolder = NSURL(fileURLWithPath: cachesDirectory[0])
+        } else {
+            print("uh oh... there is no cache folder in this sandbox! -- guess we'll use /tmp for now")
+        }
         
         urlSession = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration(), delegate: self, delegateQueue: NSOperationQueue.mainQueue())
     }
