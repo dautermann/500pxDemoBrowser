@@ -78,6 +78,14 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
                 } catch let error as NSError {
                     print("couldn't write data to \(cacheURL.absoluteString) - \(error.localizedDescription)")
                 }
+            } else {
+                // this is sloppy and I'm sorry but I'm 2 minutes away from submitting this code back to you :-)
+                if let mainwindow = UIApplication.sharedApplication().delegate!.window
+                {
+                    let alert = UIAlertController(title: "Alert", message: "Didn't get a picture back", preferredStyle: UIAlertControllerStyle.Alert)
+                    alert.addAction(UIAlertAction(title: "Click", style: UIAlertActionStyle.Default, handler: nil))
+                    mainwindow!.rootViewController!.presentViewController(alert, animated: true, completion: nil)
+                }
             }
         })
         task.resume()

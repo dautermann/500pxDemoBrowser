@@ -100,6 +100,9 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
                     // okay the json object was nil, something went wrong. Maybe the server isn't running?
                     let jsonStr = NSString(data: data!, encoding: NSUTF8StringEncoding)
                     print("could not parse JSON: \(jsonStr)")
+                    let alert = UIAlertController(title: "Alert", message: "Could not Parse Json", preferredStyle: UIAlertControllerStyle.Alert)
+                    alert.addAction(UIAlertAction(title: "Click", style: UIAlertActionStyle.Default, handler: nil))
+                    self.presentViewController(alert, animated: true, completion: nil)
                 }
             }
             catch let error as NSError {
