@@ -16,7 +16,7 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
     @IBOutlet var searchBar : UISearchBar!
     
     var urlSession : NSURLSession
-    var latestPage : Int = 1
+    var latestPage : Int = 0
     var totalPages : Int = 0
     
     var pickerDataSource = ["popular", "highest_rated", "upcoming", "editors", "fresh_today", "fresh_yesterday", "fresh_week"]
@@ -26,17 +26,20 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
     
     required init?(coder aDecoder: NSCoder) {
         urlSession = NSURLSession.sharedSession()
-
         super.init(coder: aDecoder)
-        
+        urlSession = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration(), delegate: self, delegateQueue: NSOperationQueue.mainQueue())
+    }
+    
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: NSBundle?)
+    {
+        urlSession = NSURLSession.sharedSession()
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         urlSession = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration(), delegate: self, delegateQueue: NSOperationQueue.mainQueue())
     }
     
     override func viewDidLoad() {
-        
         super.viewDidLoad()
-        
-        performGetFrom500pxServer(forPage: 1)
+        performGetNextPageFrom500pxServer(nil)
     }
 
     override func didReceiveMemoryWarning() {
@@ -58,10 +61,13 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
         super.viewWillDisappear(animated)
     }
 
-    func performGetFrom500pxServer(forPage pageNumber :Int)
+    // useful optional closure used for fulfilling expectations
+    func performGetNextPageFrom500pxServer(closure: (() -> ())?)
     {
+        // we'd like to get the next page (i.e. the page after the last one we saw)
+        let pageWeWant = self.latestPage+1
         let categoryString = categoryButton.titleForState(.Normal)
-        let requestURLString = "https://api.500px.com/v1/photos?feature=\(categoryString!)&page=\(pageNumber)&image_size=600&consumer_key=vW8Ns53y0F57vkbHeDfe3EsYFCatTJ3BrFlhgV3W"
+        let requestURLString = "https://api.500px.com/v1/photos?feature=\(categoryString!)&page=\(pageWeWant)&image_size=600&consumer_key=vW8Ns53y0F57vkbHeDfe3EsYFCatTJ3BrFlhgV3W"
         let request = NSMutableURLRequest(URL: NSURL(string:requestURLString)!)
         
         request.HTTPMethod = "GET"
@@ -70,7 +76,6 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
             do {
                 let json = try NSJSONSerialization.JSONObjectWithData(data!, options: []) as? [String:AnyObject]
                 
-
                 if let totalPages = json!["total_pages"] as? Int
                 {
                     self.totalPages = totalPages
@@ -78,12 +83,24 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
                 
                 if let newPhotoArray = json!["photos"] as? [NSDictionary]
                 {
+                    if let currentPage = json!["current_page"] as? Int
+                    {
+                        // we already got this page, nothing else to do except call
+                        // the optional closure and then return
+                        if self.latestPage == currentPage
+                        {
+                            closure?()
+                            return;
+                        }
+                        self.latestPage = currentPage
+                    }
+
                     if self.photoArray == nil {
                         self.photoArray = newPhotoArray
                     } else {
                         self.photoArray!.appendContentsOf(newPhotoArray)
                     }
-
+                    
                     dispatch_async(dispatch_get_main_queue(), { () -> Void in
                         var indexPathArray : [NSIndexPath] = []
                         let previousPage = self.latestPage - 1
@@ -92,10 +109,14 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
                             let indexPath = NSIndexPath(forRow: newRow, inSection: 0)
                             indexPathArray.append(indexPath)
                         }
+                        
                         self.tableView.beginUpdates()
                         self.tableView.insertRowsAtIndexPaths(indexPathArray, withRowAnimation: UITableViewRowAnimation.Automatic)
                         self.tableView.endUpdates()
                     })
+
+                    closure?()
+                    
                 } else {
                     // okay the json object was nil, something went wrong. Maybe the server isn't running?
                     let jsonStr = NSString(data: data!, encoding: NSUTF8StringEncoding)
@@ -282,14 +303,14 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
             {
                 if indexPath.row >= photoArray.count - 1
                 {
-                    latestPage++
+                    let pageWeWant = latestPage+1
                     
                     // I probably need to check to see if page 1000 will get returned
                     // from the server when it says there are 1000 total pages
                     //
-                    if latestPage <= totalPages
+                    if pageWeWant <= totalPages
                     {
-                        performGetFrom500pxServer(forPage: latestPage)
+                        performGetNextPageFrom500pxServer(nil)
                     }
                 }
             }
@@ -325,7 +346,11 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
         {
             searchBarCancelButtonClicked(searchBar);
         } else {
-            let array = NSArray(array: photoArray!)
+            // can't do anything with a nil photoArray
+            guard let photoArray = photoArray else {
+                return
+            }
+            let array = NSArray(array: photoArray)
             
             self.filteredPhotoArray = array.filteredArrayUsingPredicate(NSPredicate(format:"name CONTAINS %@", searchBar.text!)) as? [NSDictionary]
             
@@ -350,11 +375,11 @@ class PhotoBrowserViewController: UIViewController, NSURLSessionDelegate, NSURLS
         categoryButton.setTitle(pickerDataSource[row], forState: .Normal)
         filteredPhotoArray = nil
         self.photoArray = nil
-        latestPage = 1
+        latestPage = 0
         totalPages = 0
         searchBar.text = ""
         self.tableView.reloadData()
-        performGetFrom500pxServer(forPage: 1)
+        performGetNextPageFrom500pxServer(nil)
         pickerView.hidden = true
         tableView.userInteractionEnabled = true
         tableView.alpha = 1.0

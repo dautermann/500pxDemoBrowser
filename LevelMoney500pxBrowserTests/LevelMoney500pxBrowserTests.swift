@@ -11,26 +11,65 @@ import XCTest
 
 class LevelMoney500pxBrowserTests: XCTestCase {
     
+    var viewController: PhotoBrowserViewController!
+    
+    var expectation : XCTestExpectation?
+    
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        
+        let storyboard = UIStoryboard(name: "Main", bundle: NSBundle.mainBundle())
+        
+        let navigationController = storyboard.instantiateInitialViewController() as! UINavigationController
+        viewController = navigationController.topViewController as! PhotoBrowserViewController
+        
+        UIApplication.sharedApplication().keyWindow!.rootViewController = viewController
+        
+        // Test and Load the View at the Same Time!
+        XCTAssertNotNil(navigationController.view)
+        XCTAssertNotNil(viewController.view)
     }
     
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+
+    func resultTestFinished() -> () {
+        dispatch_async(dispatch_get_main_queue(), { () -> Void in
+            self.expectation?.fulfill()
+        })
     }
     
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measureBlock {
-            // Put the code you want to measure the time of here.
+    func testForResults() {
+        
+        let currentPage = viewController.latestPage
+        
+        expectation = expectationWithDescription("test for results")
+
+        viewController.performGetNextPageFrom500pxServer(resultTestFinished)
+        
+        waitForExpectationsWithTimeout(10) { error in
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
+            }
         }
+        
+        let updatedPage = viewController.latestPage
+        
+        XCTAssert(updatedPage == currentPage+1, "should have incremented a page at this point")
+
+        let numberOfResults = viewController.tableView(viewController.tableView, numberOfRowsInSection: 0)
+        
+        XCTAssert(updatedPage*20 == numberOfResults, "should have \(updatedPage*20) results for \(updatedPage) pages of pictures")
     }
     
+    func testSearchBar()
+    {
+        viewController.searchBar.text = "$@#$#$#$@" // garbage
+        viewController.searchBarSearchButtonClicked(viewController.searchBar)
+        let numberOfResults = viewController.tableView(viewController.tableView, numberOfRowsInSection: 0)
+        
+        XCTAssert(numberOfResults == 0, "garbage search bar contents should yield no results")
+    }
 }
