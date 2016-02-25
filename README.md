@@ -2,9 +2,9 @@
 
 A demo mobile app that browses through photos found at the [500px.com](https://500pxcom) website.
 
-![upcoming images][1]
+![upcoming images](images/upcoming.jpg)
 
-![image categories][2]
+![image categories](images/choosefrom.jpg)
 
 The reason the project starts off with the name LevelMoney is that this was a programming assignment for a potential role 
 at this Capital One subsidiary.
@@ -39,5 +39,3 @@ I did a simple cache so pictures don't need to be re-downloaded every time.
 
 6. Improve error alerts & handling.
 
-    [1]: images/upcoming.jpg
-    [2]: images/choosefrom.jpg
