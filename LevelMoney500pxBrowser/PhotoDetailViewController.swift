@@ -20,7 +20,7 @@ class PhotoDetailViewController: UIViewController {
         super.viewDidLoad()
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         loadCurrentPhoto()
@@ -33,7 +33,7 @@ class PhotoDetailViewController: UIViewController {
         }
         if let photoURLString = photoDict["image_url"] as? String
         {
-            if let photoURL = NSURL(string: photoURLString)
+            if let photoURL = URL(string: photoURLString)
             {
                 imageView.imageURL = photoURL
                 PhotoBrowserCache.sharedInstance.performGetPhotoURLFrom500pxServer(forURL: photoURL, intoImageView: imageView!)
@@ -50,7 +50,7 @@ class PhotoDetailViewController: UIViewController {
         }
     }
     
-    func doTransition(gestureRecognizer: UISwipeGestureRecognizer)
+    func doTransition(_ gestureRecognizer: UISwipeGestureRecognizer)
     {
         guard let photoDict = photoDict else {
             return
@@ -58,7 +58,7 @@ class PhotoDetailViewController: UIViewController {
 
         if let photoURLString = photoDict["image_url"] as? String
         {
-            if let photoURL = NSURL(string: photoURLString)
+            if let photoURL = URL(string: photoURLString)
             {
                 imageView.imageURL = photoURL
                 PhotoBrowserCache.sharedInstance.transitionToThisPhotoURLFrom500pxServer(photoURL, intoImageView: imageView!, viaGestureRecognizer: gestureRecognizer)
@@ -67,7 +67,7 @@ class PhotoDetailViewController: UIViewController {
         }
     }
     
-    @IBAction func swipeRight(sender: UISwipeGestureRecognizer)
+    @IBAction func swipeRight(_ sender: UISwipeGestureRecognizer)
     {
         // go to previous picture, if available
         let newPhotoDict = parentVC?.getPreviousPhotoFrom(photoDict)
@@ -78,7 +78,7 @@ class PhotoDetailViewController: UIViewController {
         }
     }
 
-    @IBAction func swipeLeft(sender: UISwipeGestureRecognizer)
+    @IBAction func swipeLeft(_ sender: UISwipeGestureRecognizer)
     {
         // go to next picture, if available
         let newPhotoDict = parentVC?.getNextPhotoFrom(photoDict)

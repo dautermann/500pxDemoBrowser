@@ -18,12 +18,12 @@ class LevelMoney500pxBrowserTests: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        let storyboard = UIStoryboard(name: "Main", bundle: NSBundle.mainBundle())
+        let storyboard = UIStoryboard(name: "Main", bundle: Bundle.main)
         
         let navigationController = storyboard.instantiateInitialViewController() as! UINavigationController
         viewController = navigationController.topViewController as! PhotoBrowserViewController
         
-        UIApplication.sharedApplication().keyWindow!.rootViewController = viewController
+        UIApplication.shared.keyWindow!.rootViewController = viewController
         
         // Test and Load the View at the Same Time!
         XCTAssertNotNil(navigationController.view)
@@ -36,7 +36,7 @@ class LevelMoney500pxBrowserTests: XCTestCase {
     }
 
     func resultTestFinished() -> () {
-        dispatch_async(dispatch_get_main_queue(), { () -> Void in
+        DispatchQueue.main.async(execute: { () -> Void in
             self.expectation?.fulfill()
         })
     }
@@ -45,11 +45,11 @@ class LevelMoney500pxBrowserTests: XCTestCase {
         
         let currentPage = viewController.latestPage
         
-        expectation = expectationWithDescription("test for results")
+        expectation = self.expectation(withDescription: "test for results")
 
         viewController.performGetNextPageFrom500pxServer(resultTestFinished)
         
-        waitForExpectationsWithTimeout(10) { error in
+        waitForExpectations(timeout: 10) { error in
             if let error = error {
                 print("Error: \(error.localizedDescription)")
             }

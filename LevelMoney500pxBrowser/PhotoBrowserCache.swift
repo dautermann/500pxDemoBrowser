@@ -9,68 +9,69 @@
 import Foundation
 import UIKit
 
-class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegate {
+class PhotoBrowserCache: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
     
     static let sharedInstance = PhotoBrowserCache()
     
-    var cacheFolderURL : NSURL
+    var cacheFolderURL : URL
     
-    var urlSession : NSURLSession
+    var urlSession : URLSession
 
     // http://krakendev.io/blog/the-right-way-to-write-a-singleton
-    private override init() {
+    fileprivate override init() {
         
         // I dislike having to do these "placeholder" temporary property settings before doing the real thing
         // later on. more info at: http://stackoverflow.com/a/28431379/981049
-        urlSession = NSURLSession.sharedSession()
-        cacheFolderURL = NSURL(fileURLWithPath: "/tmp")
+        urlSession = URLSession.shared
+        cacheFolderURL = URL(fileURLWithPath: "/tmp")
         
         super.init()
         
-        let cachesDirectory = NSSearchPathForDirectoriesInDomains(.CachesDirectory, .UserDomainMask, true)
+        let cachesDirectory = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true)
         
         if cachesDirectory.count > 0
         {
-            cacheFolderURL = NSURL(fileURLWithPath: cachesDirectory[0])
+            cacheFolderURL = URL(fileURLWithPath: cachesDirectory[0])
         } else {
             print("uh oh... there is no cache folder in this sandbox! -- guess we'll use /tmp for now")
         }
         
-        urlSession = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration(), delegate: self, delegateQueue: NSOperationQueue.mainQueue())
+        urlSession = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: OperationQueue.main)
     }
     
     // if I have any time, I would write a hash function
     // to match the behavior that a URL shortner might be using
-    func getFilenameFromURL(urlToFetch: NSURL) -> String
+    func getFilenameFromURL(_ urlToFetch: URL) -> String
     {
-        let originalURLString = "\(urlToFetch.path)\(urlToFetch.parameterString)"
-        return originalURLString.stringByAddingPercentEncodingWithAllowedCharacters(.URLHostAllowedCharacterSet())!
+        let originalURLString = "\(urlToFetch.path)\(urlToFetch.path)"
+        return originalURLString.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
     }
     
-    func performGetPhotoURLFrom500pxServer(forURL urlToFetch: NSURL, intoImageView imageView: LMImageView)
+    func performGetPhotoURLFrom500pxServer(forURL urlToFetch: URL, intoImageView imageView: LMImageView)
     {
         // our crafty (and simple) cache simply saves the very unique (or UUID-looking) filename 
         // into the caches folder...
         let cacheFilename = getFilenameFromURL(urlToFetch)
-        let cachedFilenameURL = cacheFolderURL.URLByAppendingPathComponent(cacheFilename)
+        let cachedFilenameURL = cacheFolderURL.appendingPathComponent(cacheFilename)
 
-        let imageData = NSData.init(contentsOfURL: cachedFilenameURL)
+        let imageData = try? Data.init(contentsOf: cachedFilenameURL)
         
         if let imageData = imageData
         {
             let image = UIImage(data: imageData)
             
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+            DispatchQueue.main.async(execute: { () -> Void in
                 imageView.image = image
-                imageView.userInteractionEnabled = false
+                imageView.isUserInteractionEnabled = false
             })
         }
 
-        let request = NSMutableURLRequest(URL: urlToFetch)
+        var request = URLRequest(url: urlToFetch)
         
-        request.HTTPMethod = "GET"
+        request.httpMethod = "GET"
         
-        let task = urlSession.dataTaskWithRequest(request, completionHandler: {data, response, error -> Void in
+        let task = urlSession.dataTask(with: request, completionHandler: {data, response, error -> Void in
+
             // make the image view weak within the block in the case it goes offscreen and/otherwise becomes junk/nil
             weak var weakImageView = imageView
             
@@ -81,32 +82,32 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
                 
                 if weakImageView!.imageURL == urlToFetch
                 {
-                    dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                    DispatchQueue.main.async(execute: { () -> Void in
                         weakImageView?.image = image
                     })
                 }
 
                 do {
-                    try data.writeToURL(cachedFilenameURL, options: .AtomicWrite)
+                    try data.write(to: cachedFilenameURL, options: .atomicWrite)
                 } catch let error as NSError {
                     print("couldn't write data to \(cachedFilenameURL.absoluteString) - \(error.localizedDescription)")
                 }
             } else {
                 // this is sloppy and I'm sorry but I'm 2 minutes away from submitting this code back to you :-)
-                if let mainwindow = UIApplication.sharedApplication().delegate!.window
+                if let mainwindow = UIApplication.shared.delegate!.window
                 {
-                    let alert = UIAlertController(title: "Alert", message: "Didn't get a picture back", preferredStyle: UIAlertControllerStyle.Alert)
-                    alert.addAction(UIAlertAction(title: "Click", style: UIAlertActionStyle.Default, handler: nil))
-                    mainwindow!.rootViewController!.presentViewController(alert, animated: true, completion: nil)
+                    let alert = UIAlertController(title: "Alert", message: "Didn't get a picture back", preferredStyle: UIAlertControllerStyle.alert)
+                    alert.addAction(UIAlertAction(title: "Click", style: UIAlertActionStyle.default, handler: nil))
+                    mainwindow!.rootViewController!.present(alert, animated: true, completion: nil)
                 }
             }
         })
         task.resume()
     }
     
-    private func doTheActualTransition(withImage: UIImage, intoImageView imageView: LMImageView, withTransition transition: String)
+    fileprivate func doTheActualTransition(_ withImage: UIImage, intoImageView imageView: LMImageView, withTransition transition: String)
     {
-        dispatch_async(dispatch_get_main_queue(), { () -> Void in
+        DispatchQueue.main.async(execute: { () -> Void in
             
             imageView.image = withImage
             let animation = CATransition()
@@ -114,7 +115,7 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
             animation.type = kCATransitionPush
             animation.subtype = transition
             animation.timingFunction = CAMediaTimingFunction(name:kCAMediaTimingFunctionEaseOut)
-            imageView.layer.addAnimation(animation, forKey: nil)
+            imageView.layer.add(animation, forKey: nil)
 
         })
     }
@@ -123,18 +124,18 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
     // in the repo I sent back to the interviewer), the below function is a modernized Swift version of a function
     // I delivered to Capital One (the company that currently owns LevelMoney) in a previous coding assignment
     // found here -> https://github.com/dautermann/CapitalOneImageSwipeTest/blob/master/SlideViewTest/ViewController.m
-    func transitionToThisPhotoURLFrom500pxServer(urlToFetch: NSURL, intoImageView imageView: LMImageView, viaGestureRecognizer gestureRecognizer: UISwipeGestureRecognizer)
+    func transitionToThisPhotoURLFrom500pxServer(_ urlToFetch: URL, intoImageView imageView: LMImageView, viaGestureRecognizer gestureRecognizer: UISwipeGestureRecognizer)
     {
         var transition : String
         
         switch gestureRecognizer.direction {
-        case UISwipeGestureRecognizerDirection.Left :
+        case UISwipeGestureRecognizerDirection.left :
             transition = kCATransitionFromRight
-        case UISwipeGestureRecognizerDirection.Right :
+        case UISwipeGestureRecognizerDirection.right :
             transition = kCATransitionFromLeft
-        case UISwipeGestureRecognizerDirection.Down :
+        case UISwipeGestureRecognizerDirection.down :
             transition = kCATransitionFromTop
-        case UISwipeGestureRecognizerDirection.Up :
+        case UISwipeGestureRecognizerDirection.up :
             transition = kCATransitionFromBottom
         default :
             print("a swipe case I wasn't expecting")
@@ -142,9 +143,9 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
         }
 
         let cacheFilename = getFilenameFromURL(urlToFetch)
-        let cacheURL = NSURL(fileURLWithPath: "/tmp/\(cacheFilename)")
+        let cacheURL = URL(fileURLWithPath: "/tmp/\(cacheFilename)")
         
-        let imageData = NSData.init(contentsOfURL: cacheURL)
+        let imageData = try? Data.init(contentsOf: cacheURL)
         
         if let imageData = imageData
         {
@@ -156,9 +157,9 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
         }
 
         // imageData was either nil (not cached yet) or invalid, so let's go download it
-        let request = NSMutableURLRequest(URL: urlToFetch)
-        request.HTTPMethod = "GET"
-        let task = urlSession.dataTaskWithRequest(request, completionHandler: {data, response, error -> Void in
+        var request = URLRequest(url: urlToFetch)
+        request.httpMethod = "GET"
+        let task = urlSession.dataTask(with: request, completionHandler: {data, response, error -> Void in
             // make the image view weak within the block in the case it goes offscreen and/otherwise becomes junk/nil
             weak var weakImageView = imageView
             
@@ -173,7 +174,7 @@ class PhotoBrowserCache: NSObject, NSURLSessionDelegate, NSURLSessionTaskDelegat
                     }
                 
                     do {
-                        try data.writeToURL(cacheURL, options: .AtomicWrite)
+                        try data.write(to: cacheURL, options: .atomicWrite)
                     } catch let error as NSError {
                         print("couldn't write data to \(cacheURL.absoluteString) - \(error.localizedDescription)")
                     }

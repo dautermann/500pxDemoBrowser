@@ -11,7 +11,7 @@ import UIKit
 class LMImageView: UIImageView {
     // keep track of this image view's URL, super useful in case we want 
     // to cancel setting (or assigning) an image that doesn't match the view's current URL
-    var imageURL : NSURL?
+    var imageURL : URL?
 }
 
 class CircleImageView: LMImageView {
@@ -23,9 +23,9 @@ class CircleImageView: LMImageView {
                 let newImage = image.copy() as! UIImage
                 let cornerRadius = image.size.height/2
                 UIGraphicsBeginImageContextWithOptions(image.size, false, 1.0)
-                let bounds = CGRect(origin: CGPointZero, size: image.size)
+                let bounds = CGRect(origin: CGPoint.zero, size: image.size)
                 UIBezierPath(roundedRect: bounds, cornerRadius: cornerRadius).addClip()
-                newImage.drawInRect(bounds)
+                newImage.draw(in: bounds)
                 let finalImage = UIGraphicsGetImageFromCurrentImageContext()
                 UIGraphicsEndImageContext()
                 super.image = finalImage
