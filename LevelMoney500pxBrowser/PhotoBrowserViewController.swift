@@ -68,11 +68,11 @@ class PhotoBrowserViewController: UIViewController, URLSessionDelegate, URLSessi
         let pageWeWant = self.latestPage+1
         let categoryString = categoryButton.title(for: UIControlState())
         let requestURLString = "https://api.500px.com/v1/photos?feature=\(categoryString!)&page=\(pageWeWant)&image_size=600&consumer_key=vW8Ns53y0F57vkbHeDfe3EsYFCatTJ3BrFlhgV3W"
-        let request = NSMutableURLRequest(url: URL(string:requestURLString)!)
+        var request = URLRequest(url: URL(string:requestURLString)!)
         
         request.httpMethod = "GET"
         
-        let task = urlSession.dataTask(with: request, completionHandler: {data, response, error -> Void in
+        let task = urlSession.dataTask(with: request) { (data, response, error) in
             do {
                 let json = try JSONSerialization.jsonObject(with: data!, options: []) as? [String:AnyObject]
                 
@@ -104,7 +104,7 @@ class PhotoBrowserViewController: UIViewController, URLSessionDelegate, URLSessi
                     DispatchQueue.main.async(execute: { () -> Void in
                         var indexPathArray : [IndexPath] = []
                         let previousPage = self.latestPage - 1
-                        for var newRow = previousPage*20; newRow < self.latestPage*20; newRow++
+                        for newRow in previousPage*20..<self.latestPage*20
                         {
                             let indexPath = IndexPath(row: newRow, section: 0)
                             indexPathArray.append(indexPath)
@@ -119,7 +119,7 @@ class PhotoBrowserViewController: UIViewController, URLSessionDelegate, URLSessi
                     
                 } else {
                     // okay the json object was nil, something went wrong. Maybe the server isn't running?
-                    let jsonStr = NSString(data: data!, encoding: String.Encoding.utf8)
+                    let jsonStr = NSString(data: data!, encoding: String.Encoding.utf8.rawValue)
                     print("could not parse JSON: \(jsonStr)")
                     let alert = UIAlertController(title: "Alert", message: "Could not Parse Json", preferredStyle: UIAlertControllerStyle.alert)
                     alert.addAction(UIAlertAction(title: "Click", style: UIAlertActionStyle.default, handler: nil))
@@ -133,7 +133,7 @@ class PhotoBrowserViewController: UIViewController, URLSessionDelegate, URLSessi
             {
                 // a catch all...
             }
-        })
+        }
         task.resume()
     }
     
@@ -261,7 +261,7 @@ class PhotoBrowserViewController: UIViewController, URLSessionDelegate, URLSessi
         // with a valid row number thanks to the numberOfRowsInSection function above
         if let photoDict = getPhotoDictAtIndex(indexPath.row)
         {
-            if let userDict = photoDict["user"]
+            if let userDict = photoDict["user"] as? [AnyHashable:Any]
             {
                 tableCell.userNameLabel.text = userDict["fullname"] as? String
 
